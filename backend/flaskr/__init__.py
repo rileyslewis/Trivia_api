@@ -37,7 +37,7 @@ def create_app(test_config=None):
   @app.after_request
   def after_request(response):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PATCH,POST,DELETE,OPTIONS')
     return response
 
 
@@ -218,10 +218,13 @@ def create_app(test_config=None):
       try:
           selection = Question.query.order_by(Question.id).filter(Question.question.ilike('%{}%'.format(search)))
           current_questions = paginate_questions(request, selection)
+          if len(current_questions) == 0:
+              abort(404)
 
           return jsonify({
             "success": True,
             "questions": current_questions,
+            "current_category": None,
             "total_questions": len(selection.all())
           })
 
@@ -275,23 +278,30 @@ def create_app(test_config=None):
   and shown whether they were correct or not.
   ---------------------------------------------------------------
   --------- Comments: ---------
-  Sets quizzes page after requesting data from json.
+  Sets route for quizzes to play quizzes game with questions, makes sure to provide
+  questions which have not appeard in 'previousQuestions'.
+  if data cannot be found aborts 404(not found), if request not possible,
+  aborts 400 (bad request).
   ---------------------------------------------------------------
   '''
-  @app.route('/quizzes', methods=['GET', 'POST'])
+  @app.route('/quizzes', methods=['POST'])
   def generate_quizzes():
       body = request.get_json()
-
       quizCategory = body.get('quizCategory', None)
       previousQuestions = body.get('previousQuestions', None)
-
-
-      return jsonify({
-        "showAnswer": False,
-        "success": True,
-        "previousQuestions": previousQuestions,
-        "current_questions": Question.question
-      })
+      current_questions = paginate_questions(request, selection)
+      try:
+          if len(current_questions) == 0:
+              abort(404)
+          query_questions = Question.query.filter(Question.category == quizCategory).all()
+          generate_quiz = [query for query in previousQuestions if query not in query_question] \
+                        + [q for q in query_question if q not in previousQuestions]
+          return jsonify({
+            "success": True,
+            "question": generate_quiz
+          })
+      except:
+          abort(400)
 
 
   '''
