@@ -286,22 +286,28 @@ def create_app(test_config=None):
   '''
   @app.route('/quizzes', methods=['POST'])
   def generate_quizzes():
-      body = request.get_json()
-      quizCategory = body.get('quizCategory', None)
-      previousQuestions = body.get('previousQuestions', None)
-      current_questions = paginate_questions(request, selection)
-      try:
-          if len(current_questions) == 0:
-              abort(404)
-          query_questions = Question.query.filter(Question.category == quizCategory).all()
-          generate_quiz = [query for query in previousQuestions if query not in query_question] \
-                        + [q for q in query_question if q not in previousQuestions]
-          return jsonify({
+    body = request.get_json()
+    previousQuestions = body.get('previousQuestions', None)
+    quizCategory = body.get('quizCategory', None)
+    try:
+        if int(quizCategory['id']) not in range(1, 7):
+            abort(404)
+        if quizCategory['id'] == 0:
+            question = Question.query\
+                       .filter(Question.id.notin_(previousQuestions))\
+                       .order_by(func.random()).first()
+        else:
+            question = Question.query\
+                       .filter(Question.category == quizCategory['id'])\
+                       .filter(Question.id.notin_(previousQuestions))\
+                       .order_by(func.random()).first()
+        return jsonify({
             "success": True,
-            "question": generate_quiz
-          })
-      except:
-          abort(400)
+            "question": question.format()
+        })
+    except:
+        abort(404)
+
 
 
   '''
@@ -340,5 +346,13 @@ def create_app(test_config=None):
         "error": 400,
         "message": "bad request"
       }), 400
+
+  @app.errorhandler(405)
+  def not_allowed(error):
+      return jsonify({
+        "success": False,
+        "error", 405,
+        "message": "method not allowed",
+      }), 405
 
   return app
