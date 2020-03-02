@@ -80,12 +80,14 @@ GET '/categories'
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
 - Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs.
-{'1' : "Science",
+{
+'1' : "Science",
 '2' : "Art",
 '3' : "Geography",
 '4' : "History",
 '5' : "Entertainment",
-'6' : "Sports"}
+'6' : "Sports"
+}
 
 ```
 
@@ -165,14 +167,14 @@ API Error types that may be returned when requests fail:
       "answer": "Falcon One"
       "category": 1,
       "difficulty": 3,
-      "id": 3,
+      "id": 2,
       "question": "What is the name of the first Rocket built by SpaceX?"
     },
     {
       "answer": "Andrew Ng",
       "category": 1,
       "difficulty": 2,
-      "id": 4,
+      "id": 3,
       "question": "Who was the founder of Coursera and was also a Professor in Computer Science?"
     }
   ],
@@ -189,7 +191,7 @@ API Error types that may be returned when requests fail:
 {
   "deleted": 2,
   "success": true,
-  "total_questions": 3
+  "total_questions": 2
 }
 ```
 ## POST /questions
@@ -202,7 +204,7 @@ API Error types that may be returned when requests fail:
 ```
 {
   "success": true,
-  "created": 5,
+  "created": 1,
   "total_questions": 9
 }
 ```
